@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - EcoMerenda{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard
+    </h1>
+    <div class="text-muted">
+        <i class="bi bi-clock me-1"></i>Atualizado agora
+    </div>
+</div>
+
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Total de Escolas</h6>
+                        <h2 class="mb-0">{{ total_schools }}</h2>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="bi bi-building" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Desperdício Semanal</h6>
+                        <h2 class="mb-0">{{ "%.1f"|format(weekly_waste) }}kg</h2>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="bi bi-trash" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Desperdício Mensal</h6>
+                        <h2 class="mb-0">{{ "%.1f"|format(monthly_waste) }}kg</h2>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="bi bi-calendar-month" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card {% if waste_percentage > 20 %}danger{% elif waste_percentage > 10 %}warning{% else %}success{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">% Desperdício</h6>
+                        <h2 class="mb-0">{{ "%.1f"|format(waste_percentage) }}%</h2>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="bi bi-percent" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up me-2 text-primary"></i>
+                    Desperdício dos Últimos 7 Dias
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="wasteChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    
+
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-bell me-2 text-warning"></i>
+                    Alertas Recentes
+                </h5>
+                <a href="{{ url_for('alerts') }}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
+            </div>
+            <div class="card-body p-0">
+                {% if alerts %}
+                    {% for alert in alerts %}
+                    <div class="d-flex align-items-center p-3 border-bottom">
+                        <div class="me-3">
+                            {% if alert.alert_type == 'danger' %}
+                                <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                            {% elif alert.alert_type == 'warning' %}
+                                <i class="bi bi-exclamation-circle-fill text-warning"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle-fill text-info"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-medium">{{ alert.message }}</div>
+                            <small class="text-muted">{{ alert.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-3 text-center text-muted">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Nenhum alerta no momento
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-clock-history me-2 text-info"></i>
+            Registros Recentes
+        </h5>
+        <a href="{{ url_for('reports') }}" class="btn btn-sm btn-outline-primary">Ver Relatório Completo</a>
+    </div>
+    <div class="card-body p-0">
+        {% if recent_records %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Escola</th>
+                            <th>Refeição</th>
+                            <th>Preparado</th>
+                            <th>Servido</th>
+                            <th>Desperdiçado</th>
+                            <th>% Desperdício</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in recent_records %}
+                        <tr>
+                            <td>{{ record.school.name }}</td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    {% if record.meal_type == 'breakfast' %}Café da Manhã
+                                    {% elif record.meal_type == 'lunch' %}Almoço
+                                    {% else %}Jantar{% endif %}
+                                </span>
+                            </td>
+                            <td>{{ "%.1f"|format(record.food_prepared) }}kg</td>
+                            <td>{{ "%.1f"|format(record.food_served) }}kg</td>
+                            <td>{{ "%.1f"|format(record.food_wasted) }}kg</td>
+                            <td>
+                                {% set waste_pct = (record.food_wasted / record.food_prepared * 100) if record.food_prepared > 0 else 0 %}
+                                <span class="badge {% if waste_pct > 20 %}bg-danger{% elif waste_pct > 10 %}bg-warning{% else %}bg-success{% endif %}">
+                                    {{ "%.1f"|format(waste_pct) }}%
+                                </span>
+                            </td>
+                            <td>{{ record.date.strftime('%d/%m/%Y') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-4 text-center text-muted">
+                <i class="bi bi-inbox me-2"></i>
+                Nenhum registro encontrado
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Chart
+const ctx = document.getElementById('wasteChart').getContext('2d');
+const chartData = {{ chart_data|safe }};
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: chartData.map(d => d.date),
+        datasets: [{
+            label: 'Desperdício (kg)',
+            data: chartData.map(d => d.waste),
+            borderColor: '#EF4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#EF4444',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.1)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        },
+        elements: {
+            point: {
+                hoverRadius: 8
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

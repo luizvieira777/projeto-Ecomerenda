@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Escolas - EcoMerenda{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i class="bi bi-building me-2 text-primary"></i>Gerenciar Escolas
+    </h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSchoolModal">
+        <i class="bi bi-plus-lg me-2"></i>Nova Escola
+    </button>
+</div>
+
+
+<div class="row">
+    {% for school in schools %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">{{ school.name }}</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Editar</a></li>
+                            <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Excluir</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        <i class="bi bi-geo-alt me-1"></i>{{ school.address or 'Endereço não informado' }}
+                    </small>
+                    <small class="text-muted d-block">
+                        <i class="bi bi-people me-1"></i>{{ school.students_count }} alunos
+                    </small>
+                    <small class="text-muted d-block">
+                        <i class="bi bi-calendar3 me-1"></i>Cadastrada em {{ school.created_at.strftime('%d/%m/%Y') }}
+                    </small>
+                </div>
+                
+
+                {% set school_records = school.waste_records %}
+                {% if school_records %}
+                    {% set total_waste = school_records | sum(attribute='food_wasted') %}
+                    {% set total_prepared = school_records | sum(attribute='food_prepared') %}
+                    {% set waste_pct = (total_waste / total_prepared * 100) if total_prepared > 0 else 0 %}
+                    
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border-end">
+                                <div class="fw-bold text-primary">{{ school_records | length }}</div>
+                                <small class="text-muted">Registros</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-end">
+                                <div class="fw-bold text-warning">{{ "%.1f"|format(total_waste) }}kg</div>
+                                <small class="text-muted">Desperdício</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold {% if waste_pct > 20 %}text-danger{% elif waste_pct > 10 %}text-warning{% else %}text-success{% endif %}">
+                                {{ "%.1f"|format(waste_pct) }}%
+                            </div>
+                            <small class="text-muted">% Desperdício</small>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="bi bi-inbox me-2"></i>
+                        <small>Nenhum registro ainda</small>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('reports', school_id=school.id) }}" class="btn btn-sm btn-outline-primary flex-fill">
+                        <i class="bi bi-graph-up me-1"></i>Relatórios
+                    </a>
+                    <a href="{{ url_for('register_waste') }}" class="btn btn-sm btn-outline-success flex-fill">
+                        <i class="bi bi-plus-circle me-1"></i>Registrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% if not schools %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-building text-muted" style="font-size: 3rem;"></i>
+                <h4 class="mt-3 mb-2">Nenhuma escola cadastrada</h4>
+                <p class="text-muted mb-4">Comece adicionando a primeira escola ao sistema</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSchoolModal">
+                    <i class="bi bi-plus-lg me-2"></i>Adicionar Primeira Escola
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+
+<div class="modal fade" id="addSchoolModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-building me-2"></i>Nova Escola
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome da Escola</label>
+                        <input type="text" class="form-control" id="name" name="name" required 
+                               placeholder="Ex: Escola Municipal João Silva">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Endereço</label>
+                        <input type="text" class="form-control" id="address" name="address" 
+                               placeholder="Ex: Rua das Flores, 123 - Centro">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="students_count" class="form-label">Número de Alunos</label>
+                        <input type="number" class="form-control" id="students_count" name="students_count" 
+                               min="1" required placeholder="Ex: 450">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-2"></i>Adicionar Escola
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

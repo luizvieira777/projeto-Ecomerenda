@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Desperdício - EcoMerenda{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i class="bi bi-plus-circle me-2 text-primary"></i>Registrar Desperdício
+    </h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clipboard-data me-2 text-success"></i>
+                    Novo Registro de Desperdício
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="school_id" class="form-label">
+                                <i class="bi bi-building me-1"></i>Escola
+                            </label>
+                            <select class="form-select" id="school_id" name="school_id" required>
+                                <option value="">Selecione uma escola...</option>
+                                {% for school in schools %}
+                                <option value="{{ school.id }}">{{ school.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="meal_type" class="form-label">
+                                <i class="bi bi-clock me-1"></i>Tipo de Refeição
+                            </label>
+                            <select class="form-select" id="meal_type" name="meal_type" required>
+                                <option value="">Selecione o tipo...</option>
+                                <option value="breakfast">Café da Manhã</option>
+                                <option value="lunch">Almoço</option>
+                                <option value="dinner">Jantar</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="food_prepared" class="form-label">
+                                <i class="bi bi-pot me-1"></i>Comida Preparada (kg)
+                            </label>
+                            <input type="number" class="form-control" id="food_prepared" name="food_prepared" 
+                                   step="0.1" min="0" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="food_served" class="form-label">
+                                <i class="bi bi-plate me-1"></i>Comida Servida (kg)
+                            </label>
+                            <input type="number" class="form-control" id="food_served" name="food_served" 
+                                   step="0.1" min="0" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="date" class="form-label">
+                                <i class="bi bi-calendar3 me-1"></i>Data
+                            </label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{{ moment().format('YYYY-MM-DD') if moment else '' }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">
+                            <i class="bi bi-chat-text me-1"></i>Observações (opcional)
+                        </label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                  placeholder="Adicione observações sobre o desperdício..."></textarea>
+                    </div>
+                    
+
+                    <div class="alert alert-info d-none" id="wastePreview">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle me-2"></i>Prévia do Desperdício
+                        </h6>
+                        <div id="wasteInfo"></div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-2"></i>Registrar Desperdício
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-lightbulb me-2 text-warning"></i>
+                    Dicas para Reduzir Desperdício
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-1-circle-fill text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Planejamento</h6>
+                        <small class="text-muted">Calcule melhor as porções baseado no histórico de consumo</small>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-2-circle-fill text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Educação</h6>
+                        <small class="text-muted">Conscientize os alunos sobre a importância de não desperdiçar</small>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-3-circle-fill text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Reaproveitamento</h6>
+                        <small class="text-muted">Use sobras para compostagem ou doação quando possível</small>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-start">
+                    <div class="me-3">
+                        <i class="bi bi-4-circle-fill text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Monitoramento</h6>
+                        <small class="text-muted">Registre diariamente para identificar padrões</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-exclamation-triangle me-2 text-warning"></i>
+                    Níveis de Alerta
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-success me-2">Baixo</span>
+                    <small>0-10% de desperdício</small>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-warning me-2">Médio</span>
+                    <small>10-20% de desperdício</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-danger me-2">Alto</span>
+                    <small>Acima de 20% de desperdício</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const preparedInput = document.getElementById('food_prepared');
+    const servedInput = document.getElementById('food_served');
+    const wastePreview = document.getElementById('wastePreview');
+    const wasteInfo = document.getElementById('wasteInfo');
+    
+    function updateWastePreview() {
+        const prepared = parseFloat(preparedInput.value) || 0;
+        const served = parseFloat(servedInput.value) || 0;
+        
+        if (prepared > 0 && served >= 0) {
+            const wasted = prepared - served;
+            const wastePercentage = (wasted / prepared * 100);
+            
+            let alertClass = 'alert-success';
+            let alertIcon = 'bi-check-circle';
+            let alertText = 'Baixo desperdício';
+            
+            if (wastePercentage > 20) {
+                alertClass = 'alert-danger';
+                alertIcon = 'bi-exclamation-triangle';
+                alertText = 'Alto desperdício - Atenção necessária!';
+            } else if (wastePercentage > 10) {
+                alertClass = 'alert-warning';
+                alertIcon = 'bi-exclamation-circle';
+                alertText = 'Desperdício moderado';
+            }
+            
+            wastePreview.className = `alert ${alertClass}`;
+            wasteInfo.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <i class="${alertIcon} me-2"></i>
+                    <strong>${alertText}</strong>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted">Desperdício:</small><br>
+                        <strong>${wasted.toFixed(1)}kg</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">Percentual:</small><br>
+                        <strong>${wastePercentage.toFixed(1)}%</strong>
+                    </div>
+                </div>
+            `;
+            wastePreview.classList.remove('d-none');
+        } else {
+            wastePreview.classList.add('d-none');
+        }
+    }
+    
+    preparedInput.addEventListener('input', updateWastePreview);
+    servedInput.addEventListener('input', updateWastePreview);
+    
+    // Set today's date as default
+    document.getElementById('date').valueAsDate = new Date();
+});
+</script>
+{% endblock %}

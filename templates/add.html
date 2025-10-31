@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-plus-circle me-2 text-success"></i>
+                    Registrar Desperdício
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="school_name" class="form-label">Nome da Escola</label>
+                            <input type="text" class="form-control" id="school_name" name="school_name" 
+                                   placeholder="Ex: Escola Municipal Centro" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="meal_type" class="form-label">Tipo de Refeição</label>
+                            <select class="form-select" id="meal_type" name="meal_type" required>
+                                <option value="">Selecione...</option>
+                                <option value="breakfast">Café da Manhã</option>
+                                <option value="lunch">Almoço</option>
+                                <option value="dinner">Jantar</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="food_prepared" class="form-label">Comida Preparada (kg)</label>
+                            <input type="number" class="form-control" id="food_prepared" name="food_prepared" 
+                                   step="0.1" min="0" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="food_served" class="form-label">Comida Servida (kg)</label>
+                            <input type="number" class="form-control" id="food_served" name="food_served" 
+                                   step="0.1" min="0" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="date" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                        </div>
+                    </div>
+                    
+
+                    <div class="alert alert-info d-none" id="wastePreview">
+                        <h6><i class="bi bi-info-circle me-2"></i>Prévia do Desperdício</h6>
+                        <div id="wasteInfo"></div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-2"></i>Salvar Registro
+                        </button>
+                        <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6 class="text-warning">
+                    <i class="bi bi-lightbulb me-2"></i>Dicas para Reduzir Desperdício
+                </h6>
+                <ul class="mb-0 small">
+                    <li>Planeje as porções baseado no histórico</li>
+                    <li>Eduque os alunos sobre não desperdiçar</li>
+                    <li>Reaproveite sobras quando possível</li>
+                    <li>Monitore diariamente os padrões</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Definir data de hoje como padrão
+document.getElementById('date').valueAsDate = new Date();
+
+// Preview do desperdício
+function updatePreview() {
+    const prepared = parseFloat(document.getElementById('food_prepared').value) || 0;
+    const served = parseFloat(document.getElementById('food_served').value) || 0;
+    
+    if (prepared > 0 && served >= 0) {
+        const wasted = prepared - served;
+        const percentage = (wasted / prepared * 100);
+        
+        let alertClass = 'alert-success';
+        let message = 'Baixo desperdício';
+        
+        if (percentage > 20) {
+            alertClass = 'alert-danger';
+            message = 'Alto desperdício - Atenção!';
+        } else if (percentage > 10) {
+            alertClass = 'alert-warning';
+            message = 'Desperdício moderado';
+        }
+        
+        document.getElementById('wastePreview').className = `alert ${alertClass}`;
+        document.getElementById('wasteInfo').innerHTML = `
+            <strong>${message}</strong><br>
+            Desperdício: ${wasted.toFixed(1)}kg (${percentage.toFixed(1)}%)
+        `;
+        document.getElementById('wastePreview').classList.remove('d-none');
+    } else {
+        document.getElementById('wastePreview').classList.add('d-none');
+    }
+}
+
+document.getElementById('food_prepared').addEventListener('input', updatePreview);
+document.getElementById('food_served').addEventListener('input', updatePreview);
+</script>
+{% endblock %}
